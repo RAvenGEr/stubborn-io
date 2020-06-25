@@ -5,7 +5,9 @@
 
 mod io;
 mod tcp;
+mod tls;
 
 pub use self::io::{StubbornIo, UnderlyingIo};
 
 pub use self::tcp::StubbornTcpStream;
+pub use self::tls::StubbornTlsStream;

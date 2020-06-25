@@ -57,7 +57,7 @@ pub mod tokio;
 #[doc(inline)]
 pub use self::config::ReconnectOptions;
 #[doc(inline)]
-pub use self::tokio::StubbornTcpStream;
+pub use self::tokio::{StubbornTcpStream, StubbornTlsStream};
 
 // needed because the above doc example can't compile due to the fact that a consumer of this crate
 // does not own the struct for tokio::fs::File.
