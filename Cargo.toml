@@ -12,11 +12,12 @@ readme = "README.md"
 
 [dependencies]
 tokio = { version = "0.2", features = ["time", "tcp", "io-util", "dns"] }
-tokio-native-tls = "0.1"
-native-tls = "0.2"
+tokio-rustls = "0.14"
+rustls = "0.18"
 bytes = "0.5"
 mio = "0.6"
 log = "0.4"
+webpki-roots = "0.20"
 
 [dev-dependencies]
 tokio = { version = "0.2", features = ["macros", "rt-core", "fs"] }

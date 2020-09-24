@@ -1,10 +1,10 @@
 use super::io::{StubbornIo, UnderlyingIo};
-use native_tls::TlsConnector;
 use std::future::Future;
 use std::io;
 use std::pin::Pin;
+use std::sync::Arc;
 use tokio::net::TcpStream;
-use tokio_native_tls::TlsStream;
+use tokio_rustls::{client::TlsStream, rustls::ClientConfig, webpki::DNSNameRef, TlsConnector};
 
 impl<A> UnderlyingIo<A> for TlsStream<TcpStream>
 where
@@ -13,16 +13,15 @@ where
     fn establish(addr: A) -> Pin<Box<dyn Future<Output = io::Result<Self>> + Send>> {
         Box::pin(async move {
             let a = addr.into();
-            let stream = TcpStream::connect(&a).await?;
-            let cx = match TlsConnector::builder().build() {
-                Ok(c) => c,
-                Err(_) => {
-                    return Err(io::Error::from(io::ErrorKind::Other));
-                }
-            };
-            let cx = tokio_native_tls::TlsConnector::from(cx);
+            let mut config = ClientConfig::new();
+            config
+                .root_store
+                .add_server_trust_anchors(&webpki_roots::TLS_SERVER_ROOTS);
+            let config = TlsConnector::from(Arc::new(config));
             let server_parts: Vec<&str> = a.split(':').collect();
-            match cx.connect(&server_parts[0], stream).await {
+            let dnsname = DNSNameRef::try_from_ascii_str(&server_parts[0]).unwrap();
+            let stream = TcpStream::connect(&a).await?;
+            match config.connect(dnsname, stream).await {
                 Ok(st) => Ok(st),
                 Err(_) => Err(io::Error::from(io::ErrorKind::NotConnected)),
             }
